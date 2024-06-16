@@ -1,13 +1,14 @@
 from django.http import JsonResponse
 from django.contrib.auth.models import User
+from django.shortcuts import render
 from rest_framework import generics, viewsets, status
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from django.utils import timezone
 from datetime import timedelta
 
-from .models import Note, UserProfile, Item, UserItem
-from .serializers import UserSerializer, NoteSerializer, ItemSerializer, UserItemSerializer
+from .models import Note, UserProfile, Item, UserItem, Category
+from .serializers import UserSerializer, NoteSerializer, ItemSerializer, UserItemSerializer, CategorySerializer
 from rest_framework.decorators import api_view, permission_classes, action
 from django.db.models.signals import post_save
 from django.dispatch import receiver
@@ -44,3 +45,8 @@ def collect_money_per_minute(request):
     user_profile.last_collection_time = now
     user_profile.save()
     return Response({'coins': user_profile.coins})
+
+def items_by_category(request, category_id):
+    category = Category.objects.get(id=category_id)
+    items = Item.objects.filter(category=category)
+    return render(request, 'items_by_category.html', {'category': category, 'items': items})
